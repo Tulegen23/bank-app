@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: bank-postgres
+    environment:
+      POSTGRES_DB: bank_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: nurbol23
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  customer-service:
+    build: ./customer-service
+    container_name: customer-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bank_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: nurbol23
+      # Другие env из application.properties, если нужно (jwt.secret и т.д.)
+      JWT_SECRET: 6E6172686F7A5365637265744B6579466F724A574954
+      JWT_EXPIRATION-TIME: 86400000
+
+  bank-service:
+    build: ./bank-service
+    container_name: bank-service
+    depends_on:
+      - postgres
+      - customer-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bank_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: nurbol23
+      CUSTOMER_SERVICE_URL: http://customer-service:8081/api/customers/exists/
+      # Другие env (jwt.secret, encryption.key и т.д.)
+      JWT_SECRET: 6E6172686F7A5365637265744B6579466F724A574954
+      JWT_EXPIRATION-TIME: 86400000
+      ENCRYPTION_KEY: 16ByteSecretKey1
+
+  bank-customer-frontend:
+    build: ./bank-customer-frontend
+    container_name: bank-customer-frontend
+    ports:
+      - "3000:80"  # Фронт на 3000 хоста, внутри на 80 (Nginx)
+    depends_on:
+      - bank-service
+      - customer-service
+
+volumes:
+  postgres-data:
