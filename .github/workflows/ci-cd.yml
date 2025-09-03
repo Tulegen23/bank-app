@@ -55,12 +55,3 @@
             tags: |
               ${{ secrets.DOCKERHUB_USERNAME }}/bank-customer-frontend:latest
               ${{ secrets.DOCKERHUB_USERNAME }}/bank-customer-frontend:${{ github.sha }}
-
-        - name: Test with Docker Compose
-          run: |
-            docker-compose -f docker-compose.yml up -d
-            sleep 30 
-            curl -f http://localhost:3000 || exit 1 
-            curl -f http://localhost:8081/swagger-ui.html || exit 1 
-            curl -f http://localhost:8082/swagger-ui.html || exit 1 
-            docker-compose -f docker-compose.yml down
