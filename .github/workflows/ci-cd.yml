@@ -46,15 +46,15 @@
               ${{ secrets.DOCKERHUB_USERNAME }}/customer-service:latest
               ${{ secrets.DOCKERHUB_USERNAME }}/customer-service:${{ github.sha }}
 
-        - name: Build and push frontend
+        - name: Build and push bank-customer-frontend
           uses: docker/build-push-action@v5
           with:
-            context: ./frontend
-            file: ./frontend/Dockerfile
+            context: ./bank-customer-frontend
+            file: ./bank-customer-frontend/Dockerfile
             push: true
             tags: |
-              ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
-              ${{ secrets.DOCKERHUB_USERNAME }}/frontend:${{ github.sha }}
+              ${{ secrets.DOCKERHUB_USERNAME }}/bank-customer-frontend:latest
+              ${{ secrets.DOCKERHUB_USERNAME }}/bank-customer-frontend:${{ github.sha }}
 
         - name: Test with Docker Compose
           run: |
